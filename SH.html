@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scavenger Hunt</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    label, select, input, button {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .question-box {
+      background: #fff;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .correct {
+      color: green;
+    }
+    .incorrect {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scavenger Hunt – Online Kihívás</h1>
+  <label for="age">Korosztály:</label>
+  <select id="age">
+    <option value="8-10">8–10 évesek</option>
+    <option value="10-12">10–12 évesek</option>
+    <option value="12-14">12–14 évesek</option>
+    <option value="14-16">14–16 évesek</option>
+    <option value="16+">16 év és idősebbek</option>
+  </select>
+
+  <label for="topic">Témakör:</label>
+  <select id="topic">
+    <option value="matematika">Matematika</option>
+    <option value="történelem">Történelem</option>
+  </select>
+
+  <button onclick="startGame()">Játék indítása</button>
+
+  <div id="game" class="question-box" style="display:none">
+    <h2 id="question"></h2>
+    <input type="text" id="answer" placeholder="Írd be a választ" />
+    <button onclick="submitAnswer()">Válasz beküldése</button>
+    <p id="feedback"></p>
+  </div>
+
+  <div id="endMessage" style="display:none">
+    <h2>Gratulálunk!</h2>
+    <p>Sikeresen teljesítetted az összes feladványt.</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://gapxezygxkbgzyqprbld.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhcHhlenlneGtiZ3p5cXByYmxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTMzODAsImV4cCI6MjA2MzU4OTM4MH0.omCDn6hluJ_S14bb6xvc8isqAkzKTaQsfki-AURpbio';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let current = 0;
+    let selected = [];
+
+    async function startGame() {
+      const age = document.getElementById('age').value;
+      const topic = document.getElementById('topic').value;
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('age_group', age)
+        .eq('topic', topic);
+
+      if (error || !data || data.length === 0) {
+        alert('Ehhez a kategóriához még nincsenek kérdések.');
+        return;
+      }
+
+      selected = data;
+      current = 0;
+      document.getElementById('game').style.display = 'block';
+      document.getElementById('endMessage').style.display = 'none';
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (current >= selected.length) {
+        document.getElementById('game').style.display = 'none';
+        document.getElementById('endMessage').style.display = 'block';
+        return;
+      }
+      document.getElementById('question').innerText = selected[current].question;
+      document.getElementById('answer').value = '';
+      document.getElementById('feedback').innerText = '';
+    }
+
+    function submitAnswer() {
+      const input = document.getElementById('answer').value.trim().toLowerCase();
+      const answers = selected[current].answers.map(ans => ans.toLowerCase());
+      const correct = answers.includes(input);
+      if (correct) {
+        document.getElementById('feedback').innerText = 'Helyes válasz!';
+        document.getElementById('feedback').className = 'correct';
+        current++;
+        setTimeout(showQuestion, 1000);
+      } else {
+        document.getElementById('feedback').innerText = 'Nem helyes, próbáld újra!';
+        document.getElementById('feedback').className = 'incorrect';
+      }
+    }
+  </script>
+</body>
+</html>
