@@ -72,6 +72,7 @@
     let current = 0;
     let selected = [];
 
+<!--
     async function startGame() {
       const age = document.getElementById('age').value;
       const topic = document.getElementById('topic').value;
@@ -92,6 +93,41 @@
       document.getElementById('endMessage').style.display = 'none';
       showQuestion();
     }
+-->
+
+async function startGame() {
+  try {
+    const age = document.getElementById('age').value;
+    const topic = document.getElementById('topic').value;
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('age_group', age)
+      .eq('topic', topic);
+
+    if (error) {
+      console.error('Supabase hiba:', error);
+      alert('Hiba történt az adatok lekérésekor.');
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert('Ehhez a kategóriához még nincsenek kérdések.');
+      return;
+    }
+
+    selected = data;
+    current = 0;
+    document.getElementById('game').style.display = 'block';
+    document.getElementById('endMessage').style.display = 'none';
+    showQuestion();
+  } catch (err) {
+    console.error('Váratlan hiba:', err);
+    alert('Váratlan hiba történt.');
+  }
+}
+
+
 
     function showQuestion() {
       if (current >= selected.length) {
