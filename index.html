@@ -65,24 +65,32 @@
   </div>
 
   <script>
+    // 🔐 IDE írd be a saját Supabase URL-edet és anon kulcsodat
     const SUPABASE_URL = 'https://gapxezygxkbgzyqprbld.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhcHhlenlneGtiZ3p5cXByYmxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTMzODAsImV4cCI6MjA2MzU4OTM4MH0.omCDn6hluJ_S14bb6xvc8isqAkzKTaQsfki-AURpbio';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let current = 0;
     let selected = [];
 
-<!--
     async function startGame() {
       const age = document.getElementById('age').value;
       const topic = document.getElementById('topic').value;
-      const { data, error } = await supabase
+
+      const { data, error } = await supabaseClient
         .from('questions')
         .select('*')
         .eq('age_group', age)
         .eq('topic', topic);
 
-      if (error || !data || data.length === 0) {
+      if (error) {
+        alert('Hiba történt az adatok lekérésekor.');
+        console.error(error);
+        return;
+      }
+
+      if (!data || data.length === 0) {
         alert('Ehhez a kategóriához még nincsenek kérdések.');
         return;
       }
@@ -93,36 +101,6 @@
       document.getElementById('endMessage').style.display = 'none';
       showQuestion();
     }
--->
-
-async function startGame() {
-  const age = document.getElementById('age').value;
-  const topic = document.getElementById('topic').value;
-  console.log("Kiválasztott korosztály:", age);
-  console.log("Kiválasztott témakör:", topic);
-
-  const { data, error } = await supabase
-    .from('questions')
-    .select('*')
-    .eq('age_group', age)
-    .eq('topic', topic);
-
-  console.log("Lekért adatok:", data);
-  console.log("Hiba:", error);
-
-  if (error || !data || data.length === 0) {
-    alert('Ehhez a kategóriához még nincsenek kérdések.');
-    return;
-  }
-
-  selected = data;
-  current = 0;
-  document.getElementById('game').style.display = 'block';
-  document.getElementById('endMessage').style.display = 'none';
-  showQuestion();
-}
-
-
 
     function showQuestion() {
       if (current >= selected.length) {
